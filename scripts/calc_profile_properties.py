@@ -161,13 +161,16 @@ def gradient(x, f, axis=None):
 
 
 ## All x and y properties
+part_type = list(profiles['halo_ids'].keys())[0]
+halo_id = profiles['halo_ids'][part_type]['full'][0]
 print()
 print()
-print(profiles['halo_profiles']['igrm'][profiles['halo_ids']['igrm']['full'][0]]['full']['x'].keys())
+print(profiles['halo_profiles'][part_type][halo_id]['full']['x'].keys())
 print()
-print(profiles['halo_profiles']['igrm'][profiles['halo_ids']['igrm']['full'][0]]['full']['y'].keys())
-print()
-print(profiles['halo_profiles']['all_particles'][profiles['halo_ids']['all_particles']['full'][0]]['full']['y'].keys())
+print(profiles['halo_profiles'][part_type][halo_id]['full']['y'].keys())
+# print(profiles['halo_profiles']['igrm'][profiles['halo_ids']['igrm']['full'][0]]['full']['y'].keys())
+# print()
+# print(profiles['halo_profiles']['all_particles'][profiles['halo_ids']['all_particles']['full'][0]]['full']['y'].keys())
 print()
 print()
 
@@ -287,6 +290,7 @@ print()
 
 # particle_types = ['igrm', 'all_particles']
 particle_types = list(profiles['halo_profiles'].keys())
+print(f'\n{particle_types}\n')
 
 # profiles_to_compute = ['core', 'big_core', 'full']
 profiles_to_compute = ['full']
@@ -390,6 +394,11 @@ for particle_type in particle_types:
                         profile[sum_prop + '_density'] = profile[sum_prop] / profile['volume']
                         profile[sum_prop + '_density_enc'] = profile[sum_prop + '_enc'] / profile['volume_enc']
 
+                    try:
+                        profile['f_mass-total'] = profile['mass_enc'] / profiles['halo_profiles']['all_particles'][halo_id][profile_to_compute]['y']['mass_enc']
+                    except:
+                        print(f'\nCould not compute f_mass-total for halo {halo_id}, particle type {particle_type}, profile {profile_to_compute}\n')
+
 
 
 
@@ -403,6 +412,11 @@ for particle_type in particle_types:
                         profile[sum_prop + '_enc'] = pnb.array.SimArray(np.nancumsum(profile[sum_prop], axis=RADIAL_AXIS), units=profile[sum_prop].units)
                         profile[sum_prop + '_density'] = profile[sum_prop] / profile['volume']
                         profile[sum_prop + '_density_enc'] = profile[sum_prop + '_enc'] / profile['volume_enc']
+
+                    try:
+                        profile['f_mass-total'] = profile['mass_enc'] / profiles['halo_profiles']['all_particles'][halo_id][profile_to_compute]['y']['mass_enc']
+                    except:
+                        print(f'\nCould not compute f_mass-total for halo {halo_id}, particle type {particle_type}, profile {profile_to_compute}\n')
 
                 
 
@@ -464,6 +478,11 @@ for particle_type in particle_types:
                     profile['mass_density_enc_fb_rhocrit'] = profile['mass_density_enc'] / profiles['cosmo_props']['rho_gas_scaling']
                     profile['mass_density_rhocrit'] = profile['mass_density'] / profiles['cosmo_props']['rho_crit']
                     profile['mass_density_enc_rhocrit'] = profile['mass_density_enc'] / profiles['cosmo_props']['rho_crit']
+
+                    try:
+                        profile['f_mass-total'] = profile['mass_enc'] / profiles['halo_profiles']['all_particles'][halo_id][profile_to_compute]['y']['mass_enc']
+                    except:
+                        print(f'\nCould not compute f_mass-total for halo {halo_id}, particle type {particle_type}, profile {profile_to_compute}\n')
         
                     ## Add extra axis so can be plotted with other metals as if it is an element, by giving its element as H (ie. index 0)
                     profile['mass_density_fb_rhocrit_for_metals'] = profile['mass_density_fb_rhocrit'][:,np.newaxis]
@@ -479,37 +498,40 @@ for particle_type in particle_types:
                     # Calculate normalized temperature, pressure and entropy profiles
                     if CALC_THERMO_PROPS:
 
-                        ## Energies and energies per unit mass/volume
                         profile['u-bin'] = profile['U']/profile['mass']
-                        profile['U_density-bin'] = profile['U']/profile['volume']
 
-                        # profile['u_v1-bin'] = profile['U_v1']/profile['mass']
-                        # profile['U_v1_density-bin'] = profile['U_v1']/profile['volume']
+                        if False:
+                            ## Energies and energies per unit mass/volume
+                            # profile['u-bin'] = profile['U']/profile['mass']
+                            profile['U_density-bin'] = profile['U']/profile['volume']
 
-                        # profile['u_v2-bin'] = profile['U_v2']/profile['mass']
-                        # profile['U_v2_density-bin'] = profile['U_v2']/profile['volume']
+                            # profile['u_v1-bin'] = profile['U_v1']/profile['mass']
+                            # profile['U_v1_density-bin'] = profile['U_v1']/profile['volume']
 
-                        # profile['u_v3-bin'] = profile['U_v3']/profile['mass']
-                        # profile['U_v3_density-bin'] = profile['U_v3']/profile['volume']
+                            # profile['u_v2-bin'] = profile['U_v2']/profile['mass']
+                            # profile['U_v2_density-bin'] = profile['U_v2']/profile['volume']
 
-                        profile['KE_total_per_mass-bin'] = profile['KE_total']/profile['mass']
-                        profile['KE_total_density-bin'] = profile['KE_total']/profile['volume']
+                            # profile['u_v3-bin'] = profile['U_v3']/profile['mass']
+                            # profile['U_v3_density-bin'] = profile['U_v3']/profile['volume']
 
-                        profile['E-bin'] = profile['U'] + profile['KE_total']
-                        profile['E_per_mass-bin'] = profile['E-bin']/profile['mass']
-                        profile['E_density-bin'] = profile['E-bin']/profile['volume']
+                            profile['KE_total_per_mass-bin'] = profile['KE_total']/profile['mass']
+                            profile['KE_total_density-bin'] = profile['KE_total']/profile['volume']
 
-                        # profile['E_v1-bin'] = profile['U_v1'] + profile['KE_total']
-                        # profile['E_v1_per_mass-bin'] = profile['E_v1-bin']/profile['mass']
-                        # profile['E_v1_density-bin'] = profile['E_v1-bin']/profile['volume']
+                            profile['E-bin'] = profile['U'] + profile['KE_total']
+                            profile['E_per_mass-bin'] = profile['E-bin']/profile['mass']
+                            profile['E_density-bin'] = profile['E-bin']/profile['volume']
 
-                        # profile['E_v2-bin'] = profile['U_v2'] + profile['KE_total']
-                        # profile['E_v2_per_mass-bin'] = profile['E_v2-bin']/profile['mass']
-                        # profile['E_v2_density-bin'] = profile['E_v2-bin']/profile['volume']
+                            # profile['E_v1-bin'] = profile['U_v1'] + profile['KE_total']
+                            # profile['E_v1_per_mass-bin'] = profile['E_v1-bin']/profile['mass']
+                            # profile['E_v1_density-bin'] = profile['E_v1-bin']/profile['volume']
 
-                        # profile['E_v3-bin'] = profile['U_v3'] + profile['KE_total']
-                        # profile['E_v3_per_mass-bin'] = profile['E_v3-bin']/profile['mass']
-                        # profile['E_v3_density-bin'] = profile['E_v3-bin']/profile['volume']
+                            # profile['E_v2-bin'] = profile['U_v2'] + profile['KE_total']
+                            # profile['E_v2_per_mass-bin'] = profile['E_v2-bin']/profile['mass']
+                            # profile['E_v2_density-bin'] = profile['E_v2-bin']/profile['volume']
+
+                            # profile['E_v3-bin'] = profile['U_v3'] + profile['KE_total']
+                            # profile['E_v3_per_mass-bin'] = profile['E_v3-bin']/profile['mass']
+                            # profile['E_v3_density-bin'] = profile['E_v3-bin']/profile['volume']
 
 
                         ## Calculate temperate directly from u-bin and Xh-bin
